@@ -69,11 +69,11 @@ prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
   <body>
     <!-- ======= Header ======= -->
-    <jsp:include page="header.jsp" />
+    <jsp:include page="layout/header.jsp" />
     <!-- End Header -->
 
     <!-- ======= Sidebar ======= -->
-    <jsp:include page="sidebar.jsp" />
+    <jsp:include page="layout/sidebar.jsp" />
     <!-- End Sidebar-->
 
     <main id="main" class="main">
@@ -537,7 +537,7 @@ prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
     <!-- End #main -->
 
     <!-- ======= Footer ======= -->
-    <jsp:include page="footer.jsp" />
+    <jsp:include page="layout/footer.jsp" />
     <!-- End Footer -->
 
     <a
