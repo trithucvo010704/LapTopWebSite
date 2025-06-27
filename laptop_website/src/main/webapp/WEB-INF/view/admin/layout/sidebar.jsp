@@ -6,7 +6,7 @@
 <aside id="sidebar" class="sidebar">
     <ul class="sidebar-nav" id="sidebar-nav">
         <li class="nav-item <%= uri.contains("/index") ? "active" : "" %>">
-            <a class="nav-link" href="/view/admin/dashboard">
+            <a class="nav-link" href="/admin/dashboard">
                 <i class="bi bi-grid"></i>
                 <span>Dashboard</span>
             </a>
@@ -17,7 +17,7 @@
             <a
                     class="nav-link collapsed"
                     data-bs-target="#user-nav"
-                    href="/view/admin/user">
+                    href="/admin/user">
                 <i class="bi bi-person"></i><span>Người sử dụng</span>
                 <i class="bi bi-chevron-right ms-auto"></i>
             </a>
@@ -27,7 +27,7 @@
             <a
                     class="nav-link collapsed"
                     data-bs-target="#product-nav"
-                    href="/view/admin/product"
+                    href="/admin/product"
             >
                 <i class="bi bi-journal-text"></i><span>Sản phẩm</span
             ><i class="bi bi-chevron-right ms-auto"></i>
@@ -39,7 +39,7 @@
             <a
                     class="nav-link collapsed"
                     data-bs-target="#orders-nav"
-                    href="/view/admin/order"
+                    href="/admin/order"
             >
                 <i class="bi bi-layout-text-window-reverse"></i
                 ><span>Đơn hàng</span
