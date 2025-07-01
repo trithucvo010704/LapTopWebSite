@@ -52,10 +52,6 @@ prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
       href="${pageContext.request.contextPath}/resources/assets/vendor/remixicon/remixicon.css"
       rel="stylesheet"
     />
-    <link
-      href="${pageContext.request.contextPath}/resources/assets/vendor/simple-datatables/style.css"
-      rel="stylesheet"
-    />
 
     <!-- Template Main CSS File -->
     <link

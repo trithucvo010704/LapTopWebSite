@@ -2,10 +2,12 @@
 class UserAjaxHandler {
   constructor() {
     this.currentPage = 0;
-    this.pageSize = 10;
+    this.pageSize = 5;
     this.searchName = "";
     this.searchRole = "";
     this.searchStatus = "";
+    this.sortBy = "";
+    this.sortDir = "desc";
     this.init();
   }
 
@@ -72,12 +74,28 @@ class UserAjaxHandler {
       e.preventDefault();
       this.createUser($(e.target));
     });
+
+    // Bind sortBy select
+    $("#sortBySelect").on("change", (e) => {
+      this.sortBy = e.target.value;
+      this.currentPage = 0;
+      this.loadUsers();
+    });
+
+    // Bind size select
+    $("#sizeSelect").on("change", (e) => {
+      this.pageSize = parseInt(e.target.value);
+      this.currentPage = 0;
+      this.loadUsers();
+    });
   }
 
   loadUsers() {
     const params = new URLSearchParams({
       page: this.currentPage,
       size: this.pageSize,
+      sortBy: this.sortBy || "createdAt",
+      sortDir: this.sortDir,
     });
 
     if (this.searchName) params.append("searchName", this.searchName);

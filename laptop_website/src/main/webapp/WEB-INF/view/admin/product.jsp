@@ -298,15 +298,6 @@ contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
       ><i class="bi bi-arrow-up-short"></i
     ></a>
 
-    <!-- Nút mở Modal -->
-    <button
-      type="button"
-      class="btn btn-primary"
-      data-bs-toggle="modal"
-      data-bs-target="#addProductModal"
-    >
-      Thêm sản phẩm mới
-    </button>
 
     <jsp:include page="crud_product/create_product.jsp" />
     <jsp:include page="crud_product/edit_product.jsp" />

@@ -48,13 +48,12 @@ class ProductAjaxHandler {
       this.loadProducts();
     });
 
-    // Bind pagination
+    // Bind pagination giống user
     $(document).on("click", ".pagination .page-link", (e) => {
       e.preventDefault();
-      const href = $(e.target).attr("href");
-      if (href) {
-        const urlParams = new URLSearchParams(href.split("?")[1]);
-        this.currentPage = parseInt(urlParams.get("page")) - 1;
+      const page = $(e.target).data("page");
+      if (page !== undefined) {
+        this.currentPage = page;
         this.loadProducts();
       }
     });
@@ -70,7 +69,7 @@ class ProductAjaxHandler {
     $(document).on("submit", ".edit-product-form", (e) => {
       e.preventDefault();
       const form = $(e.target);
-      const productId = form.data("product-id");
+      const productId = form.find("#edit_id").val();
       this.updateProduct(productId, form);
     });
 
@@ -158,60 +157,48 @@ class ProductAjaxHandler {
   }
 
   renderPagination(data) {
-    const paginationContainer = $(".pagination").parent();
+    const paginationContainer = $(".pagination-container");
     if (data.totalPages > 0) {
       let paginationHtml = `
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        Bạn đang xem trang ${data.currentPage + 1} trên ${
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            Bạn đang xem trang ${data.currentPage + 1} trên ${
         data.totalPages
       } trang
-                    </div>
-                    <nav aria-label="Page navigation">
-                        <ul class="pagination justify-content-end">
-            `;
-
+          </div>
+          <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-end">
+      `;
       // Previous button
       paginationHtml += `
-                <li class="page-item ${
-                  data.currentPage === 0 ? "disabled" : ""
-                }">
-                    <a class="page-link" href="#" data-page="${
-                      data.currentPage - 1
-                    }">Trước</a>
-                </li>
-            `;
-
-      // Page numbers
+        <li class="page-item ${data.currentPage === 0 ? "disabled" : ""}">
+          <a class="page-link" href="#" data-page="${
+            data.currentPage - 1
+          }">Trước</a>
+        </li>
+      `;
       for (let i = 1; i <= data.totalPages; i++) {
         paginationHtml += `
-                    <li class="page-item ${
-                      data.currentPage + 1 === i ? "active" : ""
-                    }">
-                        <a class="page-link" href="#" data-page="${
-                          i - 1
-                        }">${i}</a>
-                    </li>
-                `;
+          <li class="page-item ${data.currentPage + 1 === i ? "active" : ""}">
+            <a class="page-link" href="#" data-page="${i - 1}">${i}</a>
+          </li>
+        `;
       }
-
       // Next button
       paginationHtml += `
-                <li class="page-item ${
-                  data.currentPage + 1 === data.totalPages ? "disabled" : ""
-                }">
-                    <a class="page-link" href="#" data-page="${
-                      data.currentPage + 1
-                    }">Sau</a>
-                </li>
-            `;
-
+        <li class="page-item ${
+          data.currentPage + 1 === data.totalPages ? "disabled" : ""
+        }">
+          <a class="page-link" href="#" data-page="${
+            data.currentPage + 1
+          }">Sau</a>
+        </li>
+      `;
       paginationHtml += `
-                        </ul>
-                    </nav>
-                </div>
-            `;
-
+            </ul>
+          </nav>
+        </div>
+      `;
       paginationContainer.html(paginationHtml);
     } else {
       paginationContainer.empty();
@@ -268,7 +255,7 @@ class ProductAjaxHandler {
       success: (response) => {
         if (response.success) {
           this.showToast(response.message, "success");
-          $(`#editProductModal_${productId}`).modal("hide");
+          $("#editProductModal").modal("hide");
           this.loadProducts();
         } else {
           this.showToast(response.message, "error");

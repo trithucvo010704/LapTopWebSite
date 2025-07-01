@@ -386,6 +386,61 @@ class OrderAjaxHandler {
     $(".toast-container").append(toast);
     $(".toast").toast("show");
   }
+
+  openUpdateStatusModal(orderId) {
+    // Gọi API lấy thông tin đơn hàng
+    $.ajax({
+      url: `/api/orders/${orderId}`,
+      method: "GET",
+      success: (order) => {
+        // Điền dữ liệu vào modal cập nhật trạng thái
+        $("#update_orderId").val(order.id);
+        $("#update_orderCode").text(order.orderCode || "");
+        $("#update_receiverName").text(order.receiverName || "");
+        $("#update_status").val(order.status || "");
+        $("#update_paymentStatus").val(order.paymentStatus || "");
+        $("#update_note").val(order.note || "");
+        // Hiển thị modal
+        $("#updateStatusModal").modal("show");
+      },
+      error: () => {
+        this.showToast("Lỗi khi tải thông tin đơn hàng", "error");
+      },
+    });
+  }
+
+  submitStatusUpdate() {
+    const orderId = $("#update_orderId").val();
+    const status = $("#update_status").val();
+    const paymentStatus = $("#update_paymentStatus").val();
+    const note = $("#update_note").val();
+
+    // Gửi cập nhật trạng thái đơn hàng
+    $.ajax({
+      url: `/api/orders/${orderId}/status`,
+      method: "PUT",
+      contentType: "application/json",
+      data: JSON.stringify({
+        status,
+        paymentStatus,
+        note,
+      }),
+      success: (response) => {
+        if (response.message) {
+          this.showToast(response.message, "success");
+          $("#updateStatusModal").modal("hide");
+          this.loadOrders();
+        } else {
+          this.showToast("Cập nhật trạng thái đơn hàng thành công", "success");
+          $("#updateStatusModal").modal("hide");
+          this.loadOrders();
+        }
+      },
+      error: (xhr, status, error) => {
+        this.showToast("Lỗi khi cập nhật trạng thái đơn hàng", "error");
+      },
+    });
+  }
 }
 
 // Initialize when document is ready

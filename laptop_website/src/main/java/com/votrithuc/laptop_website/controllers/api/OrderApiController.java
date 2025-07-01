@@ -84,9 +84,24 @@ public class OrderApiController {
     @PutMapping("/{id}/status")
     public ResponseEntity<Map<String, Object>> updateOrderStatus(
             @PathVariable Long id,
-            @RequestParam String status) {
+            @RequestBody Map<String, Object> payload) {
         try {
-            orderService.updateOrderStatus(id, status);
+            String status = (String) payload.get("status");
+            String paymentStatus = (String) payload.get("paymentStatus");
+            String note = (String) payload.get("note");
+            if (status != null) {
+                orderService.updateOrderStatus(id, status);
+            }
+            if (paymentStatus != null) {
+                orderService.updatePaymentStatus(id, paymentStatus);
+            }
+            if (note != null) {
+                Order order = orderService.findById(id);
+                if (order != null) {
+                    order.setNote(note);
+                    orderService.save(order);
+                }
+            }
             Order updatedOrder = orderService.findById(id);
             Map<String, Object> response = new HashMap<>();
             response.put("message", "Cập nhật trạng thái đơn hàng thành công");
