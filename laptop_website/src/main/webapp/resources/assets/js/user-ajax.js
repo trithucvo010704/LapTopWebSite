@@ -129,7 +129,17 @@ class UserAjaxHandler {
     const tbody = $(".table tbody");
     tbody.empty();
 
-    if (data.users && data.users.length > 0) {
+    // Kiểm tra dữ liệu trả về
+    if (!data || !Array.isArray(data.users)) {
+      tbody.append(`
+        <tr>
+          <td colspan="8" class="text-center text-danger fw-bold">Lỗi dữ liệu người dùng</td>
+        </tr>
+      `);
+      return;
+    }
+
+    if (data.users.length > 0) {
       data.users.forEach((user, index) => {
         const statusBadge =
           user.status === "ACTIVE"
@@ -265,6 +275,11 @@ class UserAjaxHandler {
 
   createUser(form) {
     const formData = this.serializeForm(form);
+    const submitBtn = form.find('button[type="submit"]');
+    submitBtn.prop("disabled", true);
+    submitBtn.append(
+      '<span class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>'
+    );
 
     $.ajax({
       url: "/api/users",
@@ -275,13 +290,21 @@ class UserAjaxHandler {
         if (response.success) {
           this.showToast(response.message, "success");
           $("#addUserModal").modal("hide");
-          this.loadUsers();
+          setTimeout(() => {
+            $("body").removeClass("modal-open");
+            $(".modal-backdrop").remove();
+          }, 300);
         } else {
           this.showToast(response.message, "error");
         }
       },
       error: (xhr, status, error) => {
+        console.error("Lỗi khi tạo người dùng:", xhr, status, error);
         this.showToast("Lỗi khi tạo người dùng", "error");
+      },
+      complete: () => {
+        submitBtn.prop("disabled", false);
+        submitBtn.find(".spinner-border").remove();
       },
     });
   }

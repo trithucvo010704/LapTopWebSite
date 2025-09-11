@@ -109,7 +109,17 @@ class ProductAjaxHandler {
     const tbody = $(".table tbody");
     tbody.empty();
 
-    if (data.products && data.products.length > 0) {
+    // Kiểm tra dữ liệu trả về
+    if (!data || !Array.isArray(data.products)) {
+      tbody.append(`
+        <tr>
+          <td colspan="8" class="text-center text-danger fw-bold">Lỗi dữ liệu sản phẩm</td>
+        </tr>
+      `);
+      return;
+    }
+
+    if (data.products.length > 0) {
       data.products.forEach((product, index) => {
         const row = `
                     <tr>
@@ -222,6 +232,28 @@ class ProductAjaxHandler {
 
   createProduct(form) {
     const formData = this.serializeForm(form);
+    const submitBtn = form.find('button[type="submit"]');
+    submitBtn.prop("disabled", true);
+    submitBtn.append(
+      '<span class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"></span>'
+    );
+
+    // 1. Tạo sản phẩm tạm thời (optimistic)
+    const tempId = "temp_" + Date.now();
+    const optimisticProduct = {
+      id: tempId,
+      name: formData.name,
+      category: { name: $("#create_category_id option:selected").text() },
+      factory: formData.factory,
+      quantity: Number(formData.quantity),
+      sold: Number(formData.sold || 0),
+      price: Number(formData.price),
+      shortDesc: formData.shortDesc,
+      detailDesc: formData.detailDesc,
+      image: formData.image,
+      isTemp: true,
+    };
+    this.addProductToUI(optimisticProduct);
 
     $.ajax({
       url: "/api/products",
@@ -231,17 +263,103 @@ class ProductAjaxHandler {
       success: (response) => {
         if (response.success) {
           this.showToast(response.message, "success");
+          // Thay sản phẩm tạm bằng sản phẩm thật từ server
+          this.replaceTempProduct(tempId, response.product);
           $("#addProductModal").modal("hide");
-          form[0].reset();
-          this.loadProducts();
         } else {
           this.showToast(response.message, "error");
+          this.removeProductFromUI(tempId);
         }
       },
       error: (xhr, status, error) => {
         this.showToast("Lỗi khi tạo sản phẩm", "error");
+        this.removeProductFromUI(tempId);
+      },
+      complete: () => {
+        submitBtn.prop("disabled", false);
+        submitBtn.find(".spinner-border").remove();
       },
     });
+  }
+
+  // Thêm sản phẩm vào đầu bảng UI (tbody)
+  addProductToUI(product) {
+    const tbody = $(".table tbody");
+    const row = `
+      <tr id="product_row_${product.id}">
+        <td>?</td>
+        <td>${product.name || ""}</td>
+        <td>${
+          product.category && product.category.name ? product.category.name : ""
+        }</td>
+        <td>${product.factory || ""}</td>
+        <td>${product.quantity || 0}</td>
+        <td>${product.sold || 0}</td>
+        <td>${this.formatPrice(product.price)}</td>
+        <td>
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-primary" disabled>
+              <i class="bi bi-eye"></i>
+            </button>
+            <button class="btn btn-sm btn-warning" disabled>
+              <i class="bi bi-pencil-fill"></i>
+            </button>
+            <button class="btn btn-sm btn-danger" disabled>
+              <i class="bi bi-trash3"></i>
+            </button>
+          </div>
+        </td>
+      </tr>
+    `;
+    tbody.prepend(row);
+  }
+
+  // Thay sản phẩm tạm bằng sản phẩm thật (từ server)
+  replaceTempProduct(tempId, realProduct) {
+    const row = $("#product_row_" + tempId);
+    if (row.length) {
+      // Tạo lại dòng với dữ liệu thật
+      const newRow = `
+        <tr id="product_row_${realProduct.id}">
+          <td>?</td>
+          <td>${realProduct.name || ""}</td>
+          <td>${
+            realProduct.category && realProduct.category.name
+              ? realProduct.category.name
+              : ""
+          }</td>
+          <td>${realProduct.factory || ""}</td>
+          <td>${realProduct.quantity || 0}</td>
+          <td>${realProduct.sold || 0}</td>
+          <td>${this.formatPrice(realProduct.price)}</td>
+          <td>
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-primary" onclick="productHandler.viewProduct(${
+                realProduct.id
+              })">
+                <i class="bi bi-eye"></i>
+              </button>
+              <button class="btn btn-sm btn-warning" onclick="productHandler.editProduct(${
+                realProduct.id
+              })">
+                <i class="bi bi-pencil-fill"></i>
+              </button>
+              <button class="btn btn-sm btn-danger btn-delete-product" data-product-id="${
+                realProduct.id
+              }">
+                <i class="bi bi-trash3"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+      row.replaceWith(newRow);
+    }
+  }
+
+  // Xóa sản phẩm tạm khỏi UI (rollback)
+  removeProductFromUI(tempId) {
+    $("#product_row_" + tempId).remove();
   }
 
   updateProduct(productId, form) {
@@ -414,4 +532,8 @@ class ProductAjaxHandler {
 // Initialize when document is ready
 $(document).ready(function () {
   window.productHandler = new ProductAjaxHandler();
+  // Reset form khi modal đóng
+  $("#addProductModal").on("hidden.bs.modal", function () {
+    $("#createProductForm")[0].reset();
+  });
 });
